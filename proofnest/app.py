@@ -1,4 +1,4 @@
-
+Storage: S3_BUCKET = os.environ.get("S3_BUCKET")
 import os
 import io
 import boto3
