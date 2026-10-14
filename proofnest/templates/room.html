@@ -1,0 +1,35 @@
+{% extends "base.html" %}{% block body %}
+<a href="{{ url_for('index') }}" class="small">All rooms</a>
+<h1 class="h3 mt-1">{{ room.property_name }} - Room {{ room.room_number }}</h1>
+<p class="muted">{{ room.address }} · Tenant: {{ room.tenant.name }} · Landlord: {{ room.landlord_email or 'not shared' }}</p>
+<div class="row g-4">
+<div class="col-lg-8">
+  <div class="panel mb-4"><h2 class="h5">Inspections</h2>
+  {% if not room.inspections %}<p class="muted mb-0">No inspections yet. Start with the move-in inspection.</p>{% endif %}
+  <table class="table align-middle mb-0">
+  {% for i in room.inspections %}<tr>
+    <td>{{ 'Move-in' if i.kind=='move_in' else 'Move-out' }}</td><td>{{ i.inspection_date.strftime('%d %b %Y') }}</td>
+    <td>{{ i.items|length }} area(s)</td><td><span class="chip c-{{ i.status }}">{{ i.status }}</span></td>
+    <td class="text-end"><a href="{{ url_for('inspection', iid=i.id) }}">Open</a></td></tr>{% endfor %}
+  </table></div>
+  {% if owner %}
+  <div class="panel"><h2 class="h5">Start an inspection</h2>
+  <form method="post" action="{{ url_for('new_inspection', rid=room.id) }}" class="row g-2">
+    <div class="col-sm-4"><select name="kind" class="form-select"><option value="move_in">Move-in</option><option value="move_out">Move-out</option></select></div>
+    <div class="col-sm-4"><input type="date" name="date" value="{{ today }}" class="form-control" required></div>
+    <div class="col-sm-4"><button class="btn btn-pn w-100">Start inspection</button></div></form></div>
+  {% endif %}
+</div>
+<div class="col-lg-4">
+  <div class="panel mb-3"><h2 class="h5">Evidence</h2>
+    <a class="btn btn-line w-100 mb-2" href="{{ url_for('compare', rid=room.id) }}">Compare before and after</a>
+    <a class="btn btn-line w-100 mb-2" href="{{ url_for('history', rid=room.id) }}">History and file versions</a>
+    <form method="post" action="{{ url_for('make_report', rid=room.id) }}"><button class="btn btn-pn w-100">Generate PDF report</button></form>
+    {% if report %}<a class="d-block mt-2 small" href="{{ url_for('file', key=report.s3_object_key) }}" target="_blank">Open latest report ({{ report.code }})</a>{% endif %}
+  </div>
+  {% if owner %}<div class="panel"><h2 class="h5">Landlord access</h2>
+  <form method="post" action="{{ url_for('share', rid=room.id) }}">
+    <input type="email" name="landlord_email" value="{{ room.landlord_email or '' }}" class="form-control mb-2" placeholder="landlord@example.com">
+    <button class="btn btn-line btn-sm">Save access</button></form>
+  <p class="small muted mt-2 mb-0">The landlord signs up with this email. They can view your inspections and mark changes in the comparison.</p></div>{% endif %}
+</div></div>{% endblock %}

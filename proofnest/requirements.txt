@@ -1,0 +1,8 @@
+flask
+flask-sqlalchemy
+pymysql
+cryptography
+boto3
+reportlab
+pillow
+gunicorn

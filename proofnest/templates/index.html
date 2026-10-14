@@ -1,0 +1,24 @@
+{% extends "base.html" %}{% block body %}
+<div class="row g-4">
+<div class="col-lg-{{ 7 if g.user.role=='tenant' else 12 }}">
+  <h1 class="h3 mb-3">Your rooms</h1>
+  {% if not rooms %}<div class="panel muted">
+    {% if g.user.role=='tenant' %}No rooms yet. Add your room to start a move-in inspection.
+    {% else %}No rooms are shared with you yet. Ask your tenant to share the room with <b>{{ g.user.email }}</b>.{% endif %}</div>{% endif %}
+  {% for r in rooms %}{% set done = r.inspections|selectattr('status','equalto','saved')|map(attribute='kind')|list %}
+  <a href="{{ url_for('room', rid=r.id) }}" class="panel d-block text-decoration-none text-reset mb-3">
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+      <div><b class="fs-5">{{ r.property_name }} · Room {{ r.room_number }}</b><div class="muted small">{{ r.address or 'No address added' }} · Tenant: {{ r.tenant.name }}</div></div>
+      <div class="d-flex gap-2"><span class="chip {{ 'c-saved' if 'move_in' in done else 'c-draft' }}">Move-in {{ 'saved' if 'move_in' in done else 'pending' }}</span>
+      <span class="chip {{ 'c-saved' if 'move_out' in done else 'c-draft' }}">Move-out {{ 'saved' if 'move_out' in done else 'pending' }}</span></div></div></a>
+  {% endfor %}
+</div>
+{% if g.user.role=='tenant' %}
+<div class="col-lg-5"><h2 class="h5 mb-3">Add a room</h2>
+<form method="post" action="{{ url_for('new_room') }}" class="panel">
+  <label class="form-label">PG or property name</label><input name="property_name" class="form-control mb-3" required>
+  <label class="form-label">Room number</label><input name="room_number" class="form-control mb-3" required>
+  <label class="form-label">Address</label><input name="address" class="form-control mb-3">
+  <label class="form-label">Landlord email <span class="muted fw-normal">(optional, can add later)</span></label><input type="email" name="landlord_email" class="form-control mb-3">
+  <button class="btn btn-pn w-100">Add room</button></form></div>
+{% endif %}</div>{% endblock %}

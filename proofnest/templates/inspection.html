@@ -1,0 +1,67 @@
+{% extends "base.html" %}{% block body %}
+<a href="{{ url_for('room', rid=room.id) }}" class="small">{{ room.property_name }} - Room {{ room.room_number }}</a>
+<h1 class="h3 mt-1">{{ 'Move-in' if i.kind=='move_in' else 'Move-out' }} inspection · {{ i.inspection_date.strftime('%d %b %Y') }}</h1>
+<p class="muted">Status: {{ i.status }}{% if i.status=='saved' %} (locked){% endif %}</p>
+{% if editable %}
+<form method="post" action="{{ url_for('add_item', iid=i.id) }}" enctype="multipart/form-data" class="panel mb-4">
+  <h2 class="h5">Add an area</h2>
+  <div class="row g-3">
+    <div class="col-md-6">
+      <label class="form-label">Area</label><input name="area" class="form-control mb-2" placeholder="Wall near window, Study table, Cupboard" required>
+      <label class="form-label">Condition</label>
+      <select name="condition" class="form-select mb-2">{% for c in conditions %}<option>{{ c }}</option>{% endfor %}</select>
+      <label class="form-label">Existing damage (optional)</label><textarea name="description" rows="2" class="form-control" placeholder="Crack about 20 cm long"></textarea>
+    </div>
+    <div class="col-md-6">
+      <label class="form-label">Photo</label>
+      <input type="file" name="photo" id="photo" accept="image/*" capture="environment" class="form-control mb-2" required>
+      <button type="button" id="camBtn" class="btn btn-line btn-sm mb-2">Use live camera</button>
+      <div id="camWrap" hidden><video id="vid" autoplay playsinline muted></video>
+        <button type="button" id="snap" class="btn btn-pn btn-sm mt-2">Take photo</button></div>
+      <img id="preview" class="shot mt-2" hidden alt="Preview of the captured photo">
+      <p id="camMsg" class="small muted mb-0"></p>
+    </div></div>
+  <button class="btn btn-pn mt-3">Save area</button>
+</form>
+{% endif %}
+<div class="row g-3">
+{% for it in i.items %}
+  <div class="col-md-6 col-lg-4"><div class="panel h-100">
+    <a href="{{ url_for('file', key=it.photo_key) }}" target="_blank"><img class="shot mb-2" src="{{ url_for('file', key=it.photo_key) }}" alt="{{ it.area }}" loading="lazy"></a>
+    <div class="d-flex justify-content-between"><b>{{ it.area }}</b><span class="chip c-{{ it.condition.split()[0] }}">{{ it.condition }}</span></div>
+    <div class="small muted">{{ it.description or 'No notes.' }}</div>
+    <div class="small muted">Photo saved {{ it.uploaded_at|ist }} IST</div>
+    {% if editable %}<form method="post" action="{{ url_for('replace_photo', item_id=it.id) }}" enctype="multipart/form-data" class="mt-2 d-flex gap-2">
+      <input type="file" name="photo" accept="image/*" class="form-control form-control-sm" required>
+      <button class="btn btn-line btn-sm">Replace</button></form>{% endif %}
+  </div></div>
+{% else %}<div class="col-12"><div class="panel muted">No areas added yet.</div></div>
+{% endfor %}</div>
+{% if editable and i.items %}
+<form method="post" action="{{ url_for('finish', iid=i.id) }}" class="mt-4">
+  <button class="btn btn-pn">Save inspection record</button>
+  <span class="small muted ms-2">Saving locks the inspection so areas cannot be added or replaced.</span></form>{% endif %}
+<script>
+const photo=document.getElementById('photo');
+if(photo){
+const camBtn=document.getElementById('camBtn'),wrap=document.getElementById('camWrap'),vid=document.getElementById('vid'),
+ snap=document.getElementById('snap'),prev=document.getElementById('preview'),msg=document.getElementById('camMsg');
+let stream;
+function stop(){ if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;} wrap.hidden=true; }
+camBtn.onclick=async()=>{
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
+    msg.textContent='Live camera needs HTTPS (or localhost). Use the file picker instead; on a phone it opens the camera.';return;}
+  try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
+    vid.srcObject=stream;wrap.hidden=false;msg.textContent='';}
+  catch(e){msg.textContent='Camera permission was blocked. Allow it in the browser, or choose a file.';}
+};
+snap.onclick=()=>{
+  const c=document.createElement('canvas');c.width=vid.videoWidth;c.height=vid.videoHeight;
+  c.getContext('2d').drawImage(vid,0,0);
+  c.toBlob(b=>{const f=new File([b],'camera-'+Date.now()+'.jpg',{type:'image/jpeg'});
+    const dt=new DataTransfer();dt.items.add(f);photo.files=dt.files;
+    prev.src=URL.createObjectURL(b);prev.hidden=false;stop();msg.textContent='Photo captured. Fill in the details and save the area.';},'image/jpeg',.9);
+};
+photo.onchange=()=>{if(photo.files[0]){prev.src=URL.createObjectURL(photo.files[0]);prev.hidden=false;}};
+}
+</script>{% endblock %}

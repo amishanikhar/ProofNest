@@ -1,0 +1,17 @@
+{% extends "base.html" %}{% block body %}
+<section class="hero"><div class="row align-items-center g-5">
+  <div class="col-lg-6">
+    <h1>Photograph your room before the deposit dispute starts.</h1>
+    <p class="fs-5 muted mt-3" style="max-width:46ch">Record the room's condition at move-in and move-out. The landlord reviews the differences, and a dated PDF report is ready when you need it.</p>
+    <div class="d-flex gap-2 mt-4"><a class="btn btn-pn btn-lg" href="{{ url_for('signup') }}">Create an account</a><a class="btn btn-line btn-lg" href="{{ url_for('login') }}">Log in</a></div>
+  </div>
+  <div class="col-lg-6"><div class="panel"><div class="pair">
+    <div class="wall"><span>Move-in · 12 Oct</span></div>
+    <div class="wall crack"><span>Move-out · 30 Jun</span></div></div>
+    <div class="d-flex justify-content-between align-items-center mt-3"><b>Wall near window</b><span class="chip c-New">Landlord marked: New damage</span></div></div></div>
+</div></section>
+<section class="row g-3 pb-4">
+  <div class="col-md-4"><div class="panel h-100"><h2 class="h5">1. Tenant records move-in</h2><p class="muted mb-0">Take photos with the live camera or upload them. Each area gets a condition and notes about existing damage.</p></div></div>
+  <div class="col-md-4"><div class="panel h-100"><h2 class="h5">2. Tenant records move-out</h2><p class="muted mb-0">Photograph the same areas again when leaving. The old and new photos are matched side by side.</p></div></div>
+  <div class="col-md-4"><div class="panel h-100"><h2 class="h5">3. Landlord reviews</h2><p class="muted mb-0">The landlord compares each area, marks any change, and either party can download the PDF evidence report.</p></div></div>
+</section>{% endblock %}

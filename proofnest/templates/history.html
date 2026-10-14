@@ -1,0 +1,20 @@
+{% extends "base.html" %}{% block body %}
+<a href="{{ url_for('room', rid=room.id) }}" class="small">{{ room.property_name }} - Room {{ room.room_number }}</a>
+<h1 class="h3 mt-1">History and recovery</h1>
+<div class="row g-4"><div class="col-lg-7">
+  <div class="panel"><h2 class="h5">Activity log</h2>
+  <table class="table table-sm"><thead><tr><th>When (IST)</th><th>Who</th><th>What</th></tr></thead>
+  {% for l in logs %}<tr><td class="small">{{ l.event_time|ist }}</td><td>{{ l.user.name if l.user else '-' }}</td><td>{{ l.action.replace('_',' ') }}{% if l.detail %} <span class="muted">· {{ l.detail }}</span>{% endif %}</td></tr>
+  {% else %}<tr><td colspan="3" class="muted">No activity yet.</td></tr>{% endfor %}</table></div></div>
+<div class="col-lg-5">
+  <div class="panel mb-3"><h2 class="h5">Reports</h2>
+  {% for r in reports %}<div class="small">{{ r.code }} · {{ r.generated_at|ist }} IST</div>{% else %}<span class="muted">No report yet.</span>{% endfor %}</div>
+  <div class="panel"><h2 class="h5">File versions</h2>
+  <p class="small muted">Every overwrite keeps the older copy. Restore one to make it the current file.</p>
+  {% for title,key,vs in files %}<div class="mb-3"><b class="small">{{ title }}</b>
+    <table class="table table-sm mb-0">{% for v in vs %}<tr><td class="small">{{ v.time|ist }} IST</td><td class="small">{{ (v.size/1024)|round(1) }} KB</td>
+      <td class="text-end">{% if v.current %}<span class="chip c-Good">current</span>{% elif owner %}
+      <form method="post" action="{{ url_for('restore', rid=room.id) }}"><input type="hidden" name="key" value="{{ key }}"><input type="hidden" name="vid" value="{{ v.id }}">
+      <button class="btn btn-line btn-sm py-0">Restore</button></form>{% endif %}</td></tr>{% endfor %}</table></div>
+  {% else %}<span class="muted">Nothing to show yet. Generate a report twice or replace a photo to see versions.</span>{% endfor %}</div>
+</div></div>{% endblock %}

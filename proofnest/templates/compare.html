@@ -1,0 +1,30 @@
+{% extends "base.html" %}{% block body %}
+<a href="{{ url_for('room', rid=room.id) }}" class="small">{{ room.property_name }} · Room {{ room.room_number }}</a>
+<h1 class="h3 mt-1">Before and after</h1>
+<p class="muted" style="max-width:70ch">Areas are matched by name.
+{% if owner %}Your landlord reviews the move-out photos and marks any change here. You can see their notes once they are saved.
+{% else %}Review each area and mark what changed between move-in and move-out. Your notes go into the PDF report.{% endif %}</p>
+{% if not mi or not mo %}<div class="panel muted">Both a move-in and a move-out inspection are needed. Missing: {{ 'move-in' if not mi else 'move-out' }}.</div>{% endif %}
+{% for a,b in pairs %}
+<div class="panel mb-3" id="item{{ b.id if b else '' }}">
+  <div class="d-flex justify-content-between align-items-center mb-3"><h2 class="h5 mb-0">{{ (a or b).area }}</h2>
+    {% if b and b.change %}<span class="chip c-{{ b.change.split()[0] }}">{{ b.change }}</span>{% elif b %}<span class="chip c-draft">Not reviewed</span>{% endif %}</div>
+  <div class="row g-3">
+    {% for it,label,cls in [(a,'Move-in','in'),(b,'Move-out','out')] %}
+    <div class="col-md-6"><div class="side {{ cls }}"><div class="small muted fw-semibold mb-2">{{ label }}</div>
+    {% if it %}<a href="{{ url_for('file', key=it.photo_key) }}" target="_blank"><img class="shot" src="{{ url_for('file', key=it.photo_key) }}" alt="{{ label }}: {{ it.area }}" loading="lazy"></a>
+      <div class="mt-2"><span class="chip c-{{ it.condition.split()[0] }}">{{ it.condition }}</span> <span class="small muted ms-1">{{ it.uploaded_at|ist }} IST</span></div>
+      {% if it.description %}<div class="small mt-1">{{ it.description }}</div>{% endif %}
+    {% else %}<div class="shot d-flex align-items-center justify-content-center muted">Not recorded</div>{% endif %}</div></div>
+    {% endfor %}
+  </div>
+  {% if b %}<hr>
+  {% if not owner %}
+  <form method="post" action="{{ url_for('mark_change', item_id=b.id) }}" class="row g-2">
+    <div class="col-md-4"><label class="form-label">Change observed</label><select name="change" class="form-select">{% for c in changes %}<option {{ 'selected' if b.change==c }}>{{ c }}</option>{% endfor %}</select></div>
+    <div class="col-md-6"><label class="form-label">Note</label><input name="note" value="{{ b.change_note }}" class="form-control" placeholder="Describe what you see"></div>
+    <div class="col-md-2 d-flex align-items-end"><button class="btn btn-pn w-100">Save</button></div></form>
+  {% elif b.change_note %}<div class="small"><b>Landlord's note:</b> {{ b.change_note }}</div>
+  {% else %}<div class="small muted">The landlord has not added a note for this area.</div>{% endif %}
+  {% endif %}
+</div>{% endfor %}{% endblock %}

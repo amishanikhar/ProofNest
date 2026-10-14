@@ -1,0 +1,19 @@
+{% extends "base.html" %}{% block title %}{{ 'Create account' if mode=='signup' else 'Log in' }} - ProofNest{% endblock %}
+{% block body %}
+<div class="row justify-content-center"><div class="col-md-6 col-lg-5">
+<h1 class="h3 mb-1">{{ 'Create your account' if mode=='signup' else 'Log in' }}</h1>
+<p class="muted">Keep dated photos and notes of a rented room, so move-out disputes have a record.</p>
+<form method="post" class="panel">
+  {% if mode=='signup' %}
+  <label class="form-label">Full name</label><input name="name" class="form-control mb-3" required>
+  {% endif %}
+  <label class="form-label">Email</label><input type="email" name="email" class="form-control mb-3" required>
+  <label class="form-label">Password</label><input type="password" name="password" minlength="6" class="form-control mb-3" required>
+  {% if mode=='signup' %}
+  <label class="form-label">I am a</label>
+  <select name="role" class="form-select mb-3"><option value="tenant">Tenant</option><option value="landlord">Landlord</option></select>
+  {% endif %}
+  <button class="btn btn-pn w-100">{{ 'Create account' if mode=='signup' else 'Log in' }}</button>
+</form>
+<p class="mt-3 small">{% if mode=='signup' %}Already registered? <a href="{{ url_for('login') }}">Log in</a>{% else %}New here? <a href="{{ url_for('signup') }}">Create an account</a>{% endif %}</p>
+</div></div>{% endblock %}
