@@ -34,11 +34,17 @@ def ist(d):
 # ---------------------------------------------------------------- storage
 class Storage:
     """S3 (with versioning) in AWS mode, local folder with .versions in dev mode."""
-    def __init__(self):
-        self.s3 = None
-        if S3_BUCKET:
-            import boto3  # credentials come from the EC2 IAM role
-            self.s3 = boto3.client("s3")
+  
+ def __init__(self):
+    self.s3 = None
+    if S3_BUCKET:
+        import boto3
+        from botocore.config import Config
+
+        self.s3 = boto3.client(
+            "s3",
+            region_name=os.environ.get("AWS_REGION", "eu-north-1"),
+            config=Config(signature_version="s3v4"))
 
     def _path(self, key):
         if ".." in key or key.startswith("/"):
