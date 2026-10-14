@@ -3,7 +3,7 @@ import os
 import io
 import boto3
 from botocore.config import Config
-Storage: S3_BUCKET = os.environ.get("S3_BUCKET")
+S3_BUCKET = os.environ.get("S3_BUCKET")
 
 class Storage:
     def __init__(self):
